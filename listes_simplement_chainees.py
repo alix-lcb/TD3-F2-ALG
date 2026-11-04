@@ -80,17 +80,57 @@ class ListeChainee:
 
 
     def inserer_queue(self, val):
-        pass
+        if self.tete is None:
+            self.tete = Cellule(val)
+        else:
+            courant = self.tete
+            while courant.suivant is not None:   # on s'arrête sur la dernière cellule
+                courant = courant.suivant
+            courant.suivant = Cellule(val)
 
     def inserer_queue_recursif(self, val):
-        pass
+        def inserer_aux(cell):
+            # précondition : cell n'est pas None
+            # cas de base : cell est la dernière cellule, on y accroche la nouvelle
+            # cas général : on insère dans la suite de la liste
+            if cell.suivant is None:
+                cell.suivant = Cellule(val)
+            else:
+                inserer_aux(cell.suivant)
+ 
+        if self.tete is None:
+            self.tete = Cellule(val)
+        else:
+            inserer_aux(self.tete)
 
 
     def supprimer_queue(self):      
-        pass
+        if self.tete is None:
+            return
+        if self.tete.suivant is None:            # un seul élément : la liste devient vide
+            self.tete = None
+        else:
+            courant = self.tete
+            while courant.suivant.suivant is not None:   # on s'arrête sur l'avant-dernière cellule
+                courant = courant.suivant
+            courant.suivant = None
     
     def supprimer_queue_recursif(self):
-        pass
+        def supprimer_aux(cell):
+            # précondition : cell n'est pas None et cell.suivant n'est pas None
+            # cas de base : cell est l'avant-dernière cellule, on détache la dernière
+            # cas général : on supprime la queue dans la suite de la liste
+            if cell.suivant.suivant is None:
+                cell.suivant = None
+            else:
+                supprimer_aux(cell.suivant)
+ 
+        if self.tete is None:
+            return
+        if self.tete.suivant is None:
+            self.tete = None
+        else:
+            supprimer_aux(self.tete)
 
 
 
@@ -150,6 +190,51 @@ def tests():
     L.inserer_queue_recursif(2); L.afficher()
     L.inserer_queue_recursif(3); L.afficher()
 
+    verifications()
+
+def valeurs(liste):
+    """Contenu d'une liste sous forme de liste python (pour les vérifications)."""
+    res = []
+    courant = liste.tete
+    while courant is not None:
+        res.append(courant.valeur)
+        courant = courant.suivant
+    return res
+ 
+ 
+def verifications():
+    """Vérifications automatiques : listes vide, à un élément, plus longues ; itératif = récursif."""
+    for contenu in ([], [1], [1, 2], [1, 2, 3, 4, 5]):
+        L = ListeChainee()
+        for v in reversed(contenu):
+            L.inserer_tete(v)
+        assert valeurs(L) == contenu
+        assert L.longueur() == L.longueur_recursif() == len(contenu)
+ 
+        for ins in (ListeChainee.inserer_queue, ListeChainee.inserer_queue_recursif):
+            M = ListeChainee()
+            for v in reversed(contenu):
+                M.inserer_tete(v)
+            ins(M, 99)
+            assert valeurs(M) == contenu + [99]
+            assert M.longueur() == len(contenu) + 1
+ 
+        for sup in (ListeChainee.supprimer_queue, ListeChainee.supprimer_queue_recursif):
+            M = ListeChainee()
+            for v in reversed(contenu):
+                M.inserer_tete(v)
+            sup(M)
+            assert valeurs(M) == contenu[:-1]
+ 
+    # [BONUS] nom de liste et compteur de cellules
+    avant = Cellule.nombre_cellules_creees
+    N = ListeChainee("ma liste")
+    N.inserer_tete(1); N.inserer_queue(2); N.inserer_queue_recursif(3)
+    assert Cellule.nombre_cellules_creees == avant + 3
+    N.afficher(); N.afficher_recursif()
+    ListeChainee("vide").afficher_recursif()
+    Cellule.afficher_nombre_cellules_creees()
+    print("Toutes les vérifications sont passées.")
 
 if __name__ == "__main__":
     tests()
